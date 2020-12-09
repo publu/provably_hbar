@@ -73,26 +73,6 @@ contract EasternUnion is ERC20, ERC20Detailed, usingProvable, Ownable{
     function checkTxHash(string memory txH) public view returns (bool){
         return done[txH];
     }
-    
-    function contains(string memory what, string memory where) private pure returns(bool){
-        bytes memory whatBytes = bytes (what);
-        bytes memory whereBytes = bytes (where);
-    
-        bool found = false;
-        for (uint i = 0; i < whereBytes.length - whatBytes.length; i++) {
-            bool flag = true;
-            for (uint j = 0; j < whatBytes.length; j++)
-                if (whereBytes [i + j] != whatBytes [j]) {
-                    flag = false;
-                    break;
-                }
-            if (flag) {
-                found = true;
-                break;
-            }
-        }
-        return (found);
-    }
 
     function __callback(bytes32 myid, string memory result) public {
         
@@ -136,12 +116,12 @@ contract EasternUnion is ERC20, ERC20Detailed, usingProvable, Ownable{
         ) public payable {
     // does the transaction contain enough ETH to cover the provable tx?
        
-       
+        priceOracle = provable_getPrice("computation");
+
        if (priceOracle > msg.value) {
            revert();
        }else{
         
-        priceOracle = provable_getPrice("computation");
         // require  amount > 0 hbar
         // trigger computational oraclize call.
         
@@ -172,12 +152,13 @@ contract EasternUnion is ERC20, ERC20Detailed, usingProvable, Ownable{
             string memory amount
     ) public payable {
     // does the transaction contain enough ETH to cover the provable tx?
+    
+        priceOracle = provable_getPrice("computation");
 
        require(done[txHash] != true);
        if (priceOracle > msg.value) {
            revert();
        } else {
-            priceOracle = provable_getPrice("computation");
 
             bytes32 q = provable_query("computation", 
             [ipfsDeposit,
