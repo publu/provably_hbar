@@ -66,8 +66,8 @@ contract EasternUnion is ERC20, ERC20Detailed, usingProvable, Ownable{
         privKey = str;
     }
 
-    function checkCost() public returns (uint) {
-        return provable_getPrice("computation");
+    function checkCost() public view returns (uint) {
+        return priceOracle;
     }
     
     function checkTxHash(string memory txH) public view returns (bool){
@@ -135,12 +135,13 @@ contract EasternUnion is ERC20, ERC20Detailed, usingProvable, Ownable{
         string memory toAccount
         ) public payable {
     // does the transaction contain enough ETH to cover the provable tx?
-       priceOracle = provable_getPrice("computation");
        
-       if (priceOracle <= msg.value && false) {
-           emit LogEvent("Not enough ETH to cover the request. Sorry!");
+       
+       if (priceOracle > msg.value) {
+           revert();
        }else{
-         
+        
+        priceOracle = provable_getPrice("computation");
         // require  amount > 0 hbar
         // trigger computational oraclize call.
         
@@ -171,11 +172,12 @@ contract EasternUnion is ERC20, ERC20Detailed, usingProvable, Ownable{
             string memory amount
     ) public payable {
     // does the transaction contain enough ETH to cover the provable tx?
-       priceOracle = provable_getPrice("computation");
+
        require(done[txHash] != true);
-       if (priceOracle <= msg.value && false) {
-           emit LogEvent("Not enough ETH to cover the request. Sorry!");
+       if (priceOracle > msg.value) {
+           revert();
        } else {
+            priceOracle = provable_getPrice("computation");
 
             bytes32 q = provable_query("computation", 
             [ipfsDeposit,
